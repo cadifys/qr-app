@@ -1,15 +1,26 @@
 import api from '../config/api'
 
+// ─── Helper ──────────────────────────────────────────────────────
+
+function fixPdfUrl(product) {
+  if (!product) return product
+  const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+  if (product.scanId && product.currentPdfKey) {
+    product.currentPdfUrl = `${apiBase}/api/scan/pdf/${product.scanId}`
+  }
+  return product
+}
+
 // ─── Products ────────────────────────────────────────────────────
 
 export async function getProducts(orgId) {
   const { data } = await api.get(`/api/orgs/${orgId}/products`)
-  return data
+  return data.map(fixPdfUrl)
 }
 
 export async function getProduct(orgId, productId) {
   const { data } = await api.get(`/api/orgs/${orgId}/products/${productId}`)
-  return data
+  return fixPdfUrl(data)
 }
 
 export async function createProduct(orgId, { name, description }) {

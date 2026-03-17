@@ -212,7 +212,7 @@ export default function ProductDetail() {
           )}
 
           <QRCodeDisplay
-            url={buildScanUrl(product.scan_id)}
+            url={buildScanUrl(product.scanId)}
             productName={product.name}
             size={220}
           />
