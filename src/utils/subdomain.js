@@ -38,8 +38,7 @@ export function detectContext() {
  * Example: https://yourdomain.com/scan/PRODUCT_ID
  */
 export function buildScanUrl(productId) {
-  const base = import.meta.env.VITE_APP_DOMAIN || window.location.origin
-  return `${base}/scan/${productId}`
+  return `${window.location.origin}/scan/${productId}`
 }
 
 /**
