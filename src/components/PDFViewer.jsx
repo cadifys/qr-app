@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { ExternalLink, FileText } from 'lucide-react'
 
-export default function PDFViewer({ url, fileName }) {
-  const [useGoogle, setUseGoogle] = useState(false)
+export default function PDFViewer({ url, fileName, preferDirect = false }) {
+  const [useGoogle, setUseGoogle] = useState(!preferDirect)
 
   if (!url) {
     return (
@@ -23,7 +23,14 @@ export default function PDFViewer({ url, fileName }) {
       <div className="flex items-center justify-between px-4 py-2 bg-slate-800 text-white rounded-t-xl gap-2">
         <p className="text-sm truncate max-w-xs opacity-80">{fileName || 'Document'}</p>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {!useGoogle && (
+          {useGoogle ? (
+            <button
+              onClick={() => setUseGoogle(false)}
+              className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Use direct viewer
+            </button>
+          ) : (
             <button
               onClick={() => setUseGoogle(true)}
               className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors"
