@@ -59,5 +59,11 @@ export async function getPdfHistory(orgId, productId) {
 
 export async function resolveScan(scanId) {
   const { data } = await api.get(`/api/scan/${scanId}`)
+  // Always build the PDF proxy URL from the known API base URL,
+  // so it works regardless of what the backend embeds in the response.
+  const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+  if (data.product) {
+    data.product.currentPdfUrl = `${apiBase}/api/scan/pdf/${scanId}`
+  }
   return data
 }
