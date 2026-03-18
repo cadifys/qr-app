@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   getOrgById, getOrgAdmins, createOrgAdmin,
-  updateOrgAdmin, deleteOrgAdmin, toggleOrgStatus,
+  updateOrgAdmin, deleteOrgAdmin, toggleOrgStatus, uploadOrgLogo,
 } from '../../services/orgService'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import {
-  ArrowLeft, Building2, User, Plus, Pencil, Trash2,
-  Eye, EyeOff, ToggleLeft, ToggleRight, X, Check,
+  ArrowLeft, User, Plus, Pencil, Trash2,
+  Eye, EyeOff, ToggleLeft, ToggleRight, X, Upload,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatDistanceToNow } from 'date-fns'
@@ -38,6 +38,10 @@ export default function OrgDetail() {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deletingAdmin, setDeletingAdmin] = useState(false)
 
+  // logo
+  const [logoUploading, setLogoUploading] = useState(false)
+  const logoRef = useRef(null)
+
   useEffect(() => { load() }, [orgId])
 
   async function load() {
@@ -50,6 +54,23 @@ export default function OrgDetail() {
       toast.error('Failed to load organization')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleLogoChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) { toast.error('Logo must be under 5 MB.'); return }
+    setLogoUploading(true)
+    try {
+      const url = await uploadOrgLogo(org.id, file)
+      setOrg(prev => ({ ...prev, logoUrl: url }))
+      toast.success('Logo updated!')
+    } catch {
+      toast.error('Logo upload failed.')
+    } finally {
+      setLogoUploading(false)
+      if (logoRef.current) logoRef.current.value = ''
     }
   }
 
@@ -138,6 +159,25 @@ export default function OrgDetail() {
         <Link to="/admin" className="btn-secondary px-2.5 py-2.5">
           <ArrowLeft className="h-4 w-4" />
         </Link>
+        {/* Logo */}
+        <div className="relative group flex-shrink-0">
+          {org.logoUrl ? (
+            <img src={org.logoUrl} alt={org.businessName}
+              className="h-12 w-12 rounded-xl object-contain border border-slate-200 bg-slate-50" />
+          ) : (
+            <div className="h-12 w-12 rounded-xl bg-brand-100 flex items-center justify-center">
+              <span className="text-brand-700 text-lg font-bold">{org.businessName?.[0]?.toUpperCase()}</span>
+            </div>
+          )}
+          <label htmlFor="org-logo-upload"
+            className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            title="Update logo">
+            <Upload className="h-4 w-4 text-white" />
+          </label>
+          <input ref={logoRef} id="org-logo-upload" type="file"
+            accept="image/jpeg,image/png,image/webp" className="hidden"
+            onChange={handleLogoChange} disabled={logoUploading} />
+        </div>
         <div className="flex-1">
           <h1 className="text-xl font-bold text-slate-900">{org.businessName}</h1>
           <p className="text-sm text-slate-500">{org.contactEmail}</p>

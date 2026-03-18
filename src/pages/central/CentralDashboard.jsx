@@ -4,8 +4,8 @@ import { getAllOrgs, toggleOrgStatus } from '../../services/orgService'
 import StatsCard from '../../components/StatsCard'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import {
-  Building2, Package, QrCode, TrendingUp, Plus, Power, PowerOff,
-  Search, ExternalLink, ChevronRight, ToggleLeft, ToggleRight,
+  Building2, Package, QrCode, Plus,
+  Search, ChevronRight, ToggleLeft, ToggleRight,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatDistanceToNow } from 'date-fns'
@@ -119,9 +119,21 @@ export default function CentralDashboard() {
                 {filtered.map(org => (
                   <tr key={org.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4">
-                      <div>
-                        <p className="font-medium text-slate-900">{org.businessName}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{org.contactEmail}</p>
+                      <div className="flex items-center gap-3">
+                        {org.logoUrl ? (
+                          <img src={org.logoUrl} alt={org.businessName}
+                            className="h-9 w-9 rounded-lg object-contain border border-slate-100 bg-slate-50 flex-shrink-0" />
+                        ) : (
+                          <div className="h-9 w-9 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-brand-700 text-sm font-bold">
+                              {org.businessName?.[0]?.toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-medium text-slate-900">{org.businessName}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">{org.contactEmail}</p>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 hidden md:table-cell">

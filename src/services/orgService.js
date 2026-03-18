@@ -27,6 +27,15 @@ export async function createOrg({ businessName, slug, contactEmail, contactPhone
   return data.id
 }
 
+export async function uploadOrgLogo(orgId, file) {
+  const form = new FormData()
+  form.append('logo', file)
+  const { data } = await api.post(`/api/orgs/${orgId}/logo`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data.logoUrl
+}
+
 export async function toggleOrgStatus(orgId, active) {
   await api.patch(`/api/orgs/${orgId}/status`, { active })
 }

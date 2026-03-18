@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { createOrg, createOrgAdmin } from '../../services/orgService'
-import { ArrowLeft, Building2, User, CheckCircle, Eye, EyeOff } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Link } from 'react-router-dom'
+import { createOrg, createOrgAdmin, uploadOrgLogo } from '../../services/orgService'
+import { ArrowLeft, Building2, User, CheckCircle, Eye, EyeOff, Upload, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 function slugify(str) {
@@ -9,34 +9,43 @@ function slugify(str) {
 }
 
 export default function NewOrg() {
-  const navigate = useNavigate()
-  const [step, setStep]     = useState(1) // 1 = org info, 2 = admin user, 3 = done
+  const [step, setStep]     = useState(1)
   const [saving, setSaving] = useState(false)
   const [newOrgId, setNewOrgId] = useState(null)
 
   const [orgForm, setOrgForm] = useState({
-    businessName: '',
-    slug:         '',
-    contactEmail: '',
-    contactPhone: '',
-    description:  '',
+    businessName: '', slug: '', contactEmail: '', contactPhone: '', description: '',
   })
-  const [adminForm, setAdminForm] = useState({
-    name:         '',
-    email:        '',
-    tempPassword: '',
-  })
-  const [showPass, setShowPass] = useState(false)
+  const [adminForm, setAdminForm] = useState({ name: '', email: '', tempPassword: '' })
+  const [showPass, setShowPass]   = useState(false)
+
+  // Logo state
+  const [logoFile, setLogoFile]       = useState(null)
+  const [logoPreview, setLogoPreview] = useState(null)
+  const [uploadedLogoUrl, setUploadedLogoUrl] = useState(null)
+  const logoRef = useRef(null)
 
   function handleOrgChange(e) {
     const { name, value } = e.target
     setOrgForm(prev => {
       const next = { ...prev, [name]: value }
-      if (name === 'businessName' && !prev.slug) {
-        next.slug = slugify(value)
-      }
+      if (name === 'businessName' && !prev.slug) next.slug = slugify(value)
       return next
     })
+  }
+
+  function handleLogoSelect(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) { toast.error('Logo must be under 5 MB.'); return }
+    setLogoFile(file)
+    setLogoPreview(URL.createObjectURL(file))
+  }
+
+  function removeLogo() {
+    setLogoFile(null)
+    setLogoPreview(null)
+    if (logoRef.current) logoRef.current.value = ''
   }
 
   async function handleOrgSubmit(e) {
@@ -49,6 +58,17 @@ export default function NewOrg() {
     try {
       const id = await createOrg(orgForm)
       setNewOrgId(id)
+
+      // Upload logo if selected
+      if (logoFile) {
+        try {
+          const url = await uploadOrgLogo(id, logoFile)
+          setUploadedLogoUrl(url)
+        } catch {
+          toast.error('Logo upload failed, but org was created.')
+        }
+      }
+
       setStep(2)
       toast.success('Organization created!')
     } catch (err) {
@@ -63,7 +83,7 @@ export default function NewOrg() {
     setSaving(true)
     try {
       await createOrgAdmin({ orgId: newOrgId, ...adminForm })
-      toast.success('Admin account created! Password reset email sent.')
+      toast.success('Admin account created!')
       setStep(3)
     } catch (err) {
       toast.error(err.message || 'Failed to create admin user.')
@@ -78,10 +98,13 @@ export default function NewOrg() {
         <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle className="h-8 w-8 text-green-600" />
         </div>
+        {uploadedLogoUrl && (
+          <img src={uploadedLogoUrl} alt="logo" className="h-16 w-16 rounded-2xl object-contain border border-slate-200 mx-auto mb-4" />
+        )}
         <h2 className="text-2xl font-bold text-slate-900">Organization Onboarded!</h2>
         <p className="text-slate-500 mt-2">
-          <strong>{orgForm.businessName}</strong> is now live on the platform.
-          Admin login details were sent to <strong>{adminForm.email}</strong>.
+          <strong>{orgForm.businessName}</strong> is now live.
+          Admin login details: <strong>{adminForm.email}</strong>.
         </p>
         <div className="mt-6 p-4 bg-slate-50 rounded-xl text-sm text-slate-600 text-left space-y-2">
           <p><strong>Slug:</strong> <code className="bg-white px-2 py-0.5 rounded border">{orgForm.slug}</code></p>
@@ -91,7 +114,12 @@ export default function NewOrg() {
         </div>
         <div className="flex gap-3 justify-center mt-6">
           <Link to="/admin" className="btn-secondary">Back to Dashboard</Link>
-          <button onClick={() => { setStep(1); setOrgForm({ businessName:'',slug:'',contactEmail:'',contactPhone:'',description:'' }); setAdminForm({ name:'',email:'',tempPassword:'TempPass@123' }); setNewOrgId(null) }} className="btn-primary">
+          <button onClick={() => {
+            setStep(1)
+            setOrgForm({ businessName:'', slug:'', contactEmail:'', contactPhone:'', description:'' })
+            setAdminForm({ name:'', email:'', tempPassword:'' })
+            setNewOrgId(null); setLogoFile(null); setLogoPreview(null); setUploadedLogoUrl(null)
+          }} className="btn-primary">
             Onboard Another
           </button>
         </div>
@@ -115,28 +143,57 @@ export default function NewOrg() {
       {/* Progress */}
       <div className="flex items-center gap-2 mb-8">
         {[
-          { n: 1, label: 'Organization Info', icon: Building2 },
-          { n: 2, label: 'Admin Account',     icon: User },
-        ].map(({ n, label, icon: Icon }) => (
+          { n: 1, label: 'Organization Info' },
+          { n: 2, label: 'Admin Account' },
+        ].map(({ n, label }) => (
           <div key={n} className="flex items-center gap-2 flex-1">
             <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0
               ${step >= n ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
               {step > n ? '✓' : n}
             </div>
-            <span className={`text-sm font-medium ${step >= n ? 'text-slate-800' : 'text-slate-400'}`}>
-              {label}
-            </span>
+            <span className={`text-sm font-medium ${step >= n ? 'text-slate-800' : 'text-slate-400'}`}>{label}</span>
             {n < 2 && <div className="flex-1 h-px bg-slate-200 mx-2" />}
           </div>
         ))}
       </div>
 
       <div className="card p-6 sm:p-8">
+        {/* ── Step 1: Org Info ── */}
         {step === 1 && (
           <form onSubmit={handleOrgSubmit} className="space-y-5">
             <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
               <Building2 className="h-5 w-5 text-brand-600" /> Organization Details
             </h2>
+
+            {/* Logo upload */}
+            <div>
+              <label className="label">Organization Logo</label>
+              <div className="flex items-center gap-4">
+                {logoPreview ? (
+                  <div className="relative h-16 w-16 flex-shrink-0">
+                    <img src={logoPreview} alt="logo preview"
+                      className="h-16 w-16 rounded-xl object-contain border border-slate-200 bg-slate-50" />
+                    <button type="button" onClick={removeLogo}
+                      className="absolute -top-1.5 -right-1.5 h-5 w-5 bg-red-500 text-white rounded-full flex items-center justify-center">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-16 w-16 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center flex-shrink-0 bg-slate-50">
+                    <Building2 className="h-6 w-6 text-slate-300" />
+                  </div>
+                )}
+                <div>
+                  <input ref={logoRef} type="file" accept="image/jpeg,image/png,image/webp"
+                    onChange={handleLogoSelect} className="hidden" id="logo-upload" />
+                  <label htmlFor="logo-upload" className="btn-secondary text-sm cursor-pointer">
+                    <Upload className="h-4 w-4" />
+                    {logoPreview ? 'Change Logo' : 'Upload Logo'}
+                  </label>
+                  <p className="text-xs text-slate-400 mt-1">PNG, JPG, WebP — max 5 MB. Optional.</p>
+                </div>
+              </div>
+            </div>
 
             <div>
               <label className="label">Business Name *</label>
@@ -149,14 +206,13 @@ export default function NewOrg() {
                 Subdomain / Slug *
                 <span className="text-slate-400 font-normal ml-1">(used in admin URL & QR links)</span>
               </label>
-              <div className="flex items-center gap-0">
+              <div className="flex items-center">
                 <div className="px-3 py-2.5 bg-slate-50 border border-r-0 border-slate-200 rounded-l-lg text-sm text-slate-500">
                   {window.location.hostname}/app/
                 </div>
                 <input name="slug" value={orgForm.slug} onChange={handleOrgChange}
                   className="input rounded-l-none" placeholder="kalashseeds"
-                  pattern="[a-z0-9]+" title="Lowercase letters and numbers only"
-                  required />
+                  pattern="[a-z0-9]+" title="Lowercase letters and numbers only" required />
               </div>
               <p className="text-xs text-slate-400 mt-1">Only lowercase letters and numbers. Cannot be changed later.</p>
             </div>
@@ -176,8 +232,7 @@ export default function NewOrg() {
             <div>
               <label className="label">Description</label>
               <textarea name="description" value={orgForm.description} onChange={handleOrgChange}
-                className="input resize-none" rows={3}
-                placeholder="Brief description of the business…" />
+                className="input resize-none" rows={3} placeholder="Brief description of the business…" />
             </div>
 
             <div className="flex justify-end">
@@ -188,6 +243,7 @@ export default function NewOrg() {
           </form>
         )}
 
+        {/* ── Step 2: Admin ── */}
         {step === 2 && (
           <form onSubmit={handleAdminSubmit} className="space-y-5">
             <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
@@ -195,7 +251,6 @@ export default function NewOrg() {
             </h2>
             <p className="text-sm text-slate-500">
               This person will manage products and QR codes for <strong>{orgForm.businessName}</strong>.
-              They will receive a password-reset email to set their own password.
             </p>
 
             <div>
@@ -219,26 +274,18 @@ export default function NewOrg() {
                   type={showPass ? 'text' : 'password'}
                   value={adminForm.tempPassword}
                   onChange={e => setAdminForm(p => ({ ...p, tempPassword: e.target.value }))}
-                  className="input pr-10"
-                  placeholder="Set a login password"
-                  required
-                  minLength={6}
+                  className="input pr-10" placeholder="Set a login password" required minLength={6}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(p => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
+                <button type="button" onClick={() => setShowPass(p => !p)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                   {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              <p className="text-xs text-slate-400 mt-1">Share this password with the admin so they can log in.</p>
+              <p className="text-xs text-slate-400 mt-1">Share this password with the admin.</p>
             </div>
 
             <div className="flex gap-3 justify-between">
-              <button type="button" onClick={() => setStep(1)} className="btn-secondary">
-                ← Back
-              </button>
+              <button type="button" onClick={() => setStep(1)} className="btn-secondary">← Back</button>
               <button type="submit" disabled={saving} className="btn-primary px-6">
                 {saving ? 'Creating…' : 'Create Admin & Finish'}
               </button>
