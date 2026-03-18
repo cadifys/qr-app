@@ -66,6 +66,33 @@ export async function getPdfHistory(orgId, productId) {
   return data
 }
 
+// ─── Product Images ──────────────────────────────────────────────
+
+export async function getProductImages(orgId, productId) {
+  const { data } = await api.get(`/api/orgs/${orgId}/products/${productId}/images`)
+  return data
+}
+
+export async function uploadProductImage(orgId, productId, file, onProgress) {
+  const form = new FormData()
+  form.append('image', file)
+  const { data } = await api.post(
+    `/api/orgs/${orgId}/products/${productId}/images`,
+    form,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: e => {
+        if (onProgress && e.total) onProgress(Math.round((e.loaded / e.total) * 100))
+      },
+    }
+  )
+  return data
+}
+
+export async function deleteProductImage(orgId, productId, imageId) {
+  await api.delete(`/api/orgs/${orgId}/products/${productId}/images/${imageId}`)
+}
+
 // ─── QR Scan (public) ────────────────────────────────────────────
 
 export async function resolveScan(scanId) {
