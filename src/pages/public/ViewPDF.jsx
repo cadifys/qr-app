@@ -115,9 +115,14 @@ export default function ViewPDF() {
       {/* Header bar */}
       <header className="flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-white/10">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="h-8 w-8 bg-brand-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <QrCode className="h-4 w-4 text-white" />
-          </div>
+          {org?.logoUrl ? (
+            <img src={org.logoUrl} alt={org.businessName}
+              className="h-8 w-8 rounded-lg object-contain bg-white/10 flex-shrink-0" />
+          ) : (
+            <div className="h-8 w-8 bg-brand-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <QrCode className="h-4 w-4 text-white" />
+            </div>
+          )}
           <div className="min-w-0">
             <p className="text-xs text-white/50 leading-none">{org?.businessName}</p>
             <p className="text-sm font-semibold text-white truncate">{product?.name}</p>
