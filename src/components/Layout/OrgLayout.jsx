@@ -3,7 +3,7 @@ import { NavLink, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTenant } from '../../contexts/TenantContext'
 import {
-  LayoutDashboard, Package, QrCode, LogOut, Menu, ChevronRight,
+  LayoutDashboard, Package, QrCode, LogOut, Menu,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -39,9 +39,17 @@ export default function OrgLayout({ children }) {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-100">
-          <div className="h-9 w-9 bg-brand-600 rounded-xl flex items-center justify-center">
-            <QrCode className="h-5 w-5 text-white" />
-          </div>
+          {org?.logoUrl ? (
+            <img
+              src={org.logoUrl}
+              alt={org.businessName}
+              className="h-9 w-9 rounded-xl object-contain border border-slate-100 bg-slate-50 flex-shrink-0"
+            />
+          ) : (
+            <div className="h-9 w-9 bg-brand-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <QrCode className="h-5 w-5 text-white" />
+            </div>
+          )}
           <div className="min-w-0">
             <p className="font-bold text-slate-900 leading-none truncate">
               {org?.businessName || 'QRDocs'}
