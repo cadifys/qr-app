@@ -1,0 +1,80 @@
+name: Deploy Backend to AWS Lambda
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'package*.json'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:   # ← manual "Run workflow" button in GitHub Actions
+
+jobs:
+  deploy:
+    name: Build & Deploy Lambda
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install production dependencies
+        run: npm ci --omit=dev
+
+      - name: Package Lambda zip
+        run: |
+          zip -r /tmp/kalash-server.zip . \
+            --exclude "*.git*" \
+            --exclude "node_modules/.cache/*" \
+            --exclude "infra/*" \
+            --exclude "*.md" \
+            --exclude "samconfig.toml" \
+            --exclude "template.yaml" \
+            --exclude ".env*"
+          echo "ZIP size: $(du -sh /tmp/kalash-server.zip | cut -f1)"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ vars.AWS_REGION }}
+
+      - name: Upload zip to S3
+        run: |
+          aws s3 cp /tmp/kalash-server.zip \
+            s3://kalash-lambda-deploy-286277997837/kalash-server.zip
+
+      - name: Update Lambda function code
+        run: |
+          aws lambda update-function-code \
+            --function-name kalash-qr-server \
+            --s3-bucket kalash-lambda-deploy-286277997837 \
+            --s3-key kalash-server.zip \
+            --architectures arm64 \
+            --query "[FunctionName,CodeSize,LastModified]" \
+            --output table
+
+      - name: Wait for Lambda update to complete
+        run: |
+          aws lambda wait function-updated \
+            --function-name kalash-qr-server
+          echo "Lambda is live!"
+
+      - name: Run DB migrations
+        env:
+          DB_HOST:     ${{ secrets.DB_HOST }}
+          DB_PORT:     ${{ secrets.DB_PORT }}
+          DB_NAME:     ${{ secrets.DB_NAME }}
+          DB_USER:     ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: node src/db/migrate.js
+
+      - name: Smoke test
+        run: |
+          sleep 3
+          curl -sf https://ur92tku69f.execute-api.ap-south-1.amazonaws.com/health \
+            && echo "Health check passed"
