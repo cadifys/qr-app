@@ -67,7 +67,7 @@ export default function ViewPDF() {
               )}
             </div>
           )}
-          <p className="text-xs text-slate-400 mt-6">Powered by QRDocs</p>
+          <p className="text-xs text-slate-400 mt-6">Powered by CadifysAI</p>
         </div>
       </div>
     )
@@ -85,7 +85,7 @@ export default function ViewPDF() {
           <p className="text-slate-500 mt-2 text-sm">
             {org?.businessName} hasn&apos;t uploaded the document for this product yet. Please check back later.
           </p>
-          <p className="text-xs text-slate-400 mt-6">Powered by QRDocs</p>
+          <p className="text-xs text-slate-400 mt-6">Powered by CadifysAI</p>
         </div>
       </div>
     )
@@ -103,7 +103,7 @@ export default function ViewPDF() {
           <p className="text-slate-500 mt-2 text-sm">
             This QR code is invalid or has been removed. Please contact the company that provided this product.
           </p>
-          <p className="text-xs text-slate-400 mt-6">Powered by QRDocs</p>
+          <p className="text-xs text-slate-400 mt-6">Powered by CadifysAI</p>
         </div>
       </div>
     )
@@ -134,7 +134,7 @@ export default function ViewPDF() {
               v{product.pdfVersionCount}
             </span>
           )}
-          <span className="text-xs text-white/40 hidden sm:inline">Powered by QRDocs</span>
+          <span className="text-xs text-white/40 hidden sm:inline">Powered by CadifysAI</span>
         </div>
       </header>
 

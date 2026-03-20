@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import {
-  LayoutDashboard, Building2, LogOut, Menu, X, Shield,
+  LayoutDashboard, Building2, LogOut, Menu,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -35,11 +35,9 @@ export default function CentralLayout({ children }) {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-100">
-          <div className="h-8 w-8 bg-brand-600 rounded-lg flex items-center justify-center">
-            <Shield className="h-4 w-4 text-white" />
-          </div>
+          <img src="/favicon.svg" alt="CadifysAI" className="h-9 w-9 rounded-xl flex-shrink-0" />
           <div>
-            <p className="font-bold text-slate-900 leading-none">QRDocs</p>
+            <p className="font-bold text-slate-900 leading-none">CadifysAI</p>
             <p className="text-xs text-slate-400 mt-0.5">Super Admin</p>
           </div>
         </div>
@@ -100,7 +98,7 @@ export default function CentralLayout({ children }) {
           <button onClick={() => setSidebarOpen(true)} className="p-1 rounded-md text-slate-500">
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-semibold text-slate-800">QRDocs Admin</span>
+          <span className="font-semibold text-slate-800">CadifysAI Admin</span>
         </header>
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">

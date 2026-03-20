@@ -123,7 +123,7 @@ export default function OrgLogin() {
           )}
         </div>
 
-        <p className="text-center text-white/30 text-xs mt-6">Powered by QRDocs</p>
+        <p className="text-center text-white/30 text-xs mt-6">Powered by CadifysAI</p>
       </div>
     </div>
   )

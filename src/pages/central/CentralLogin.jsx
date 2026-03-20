@@ -33,7 +33,7 @@ export default function CentralLogin() {
           <div className="inline-flex items-center justify-center h-16 w-16 bg-white/10 backdrop-blur rounded-2xl mb-4">
             <Shield className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white">QRDocs</h1>
+          <h1 className="text-3xl font-bold text-white">CadifysAI</h1>
           <p className="text-brand-200 mt-1">Super Admin Portal</p>
         </div>
 
@@ -87,7 +87,7 @@ export default function CentralLogin() {
         </div>
 
         <p className="text-center text-brand-200/60 text-xs mt-6">
-          QRDocs Platform · Super Admin Access Only
+          CadifysAI Platform · Super Admin Access Only
         </p>
       </div>
     </div>

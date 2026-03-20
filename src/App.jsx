@@ -17,9 +17,10 @@ import OrgDetail        from './pages/central/OrgDetail'
 // Org pages
 import OrgLogin      from './pages/org/OrgLogin'
 import OrgDashboard  from './pages/org/OrgDashboard'
-import ProductList   from './pages/org/ProductList'
-import AddProduct    from './pages/org/AddProduct'
-import ProductDetail from './pages/org/ProductDetail'
+import ProductList        from './pages/org/ProductList'
+import AddProduct         from './pages/org/AddProduct'
+import ProductDetail      from './pages/org/ProductDetail'
+import ProductImagesPage  from './pages/org/ProductImagesPage'
 
 // Public
 import ViewPDF from './pages/public/ViewPDF'
@@ -58,6 +59,7 @@ function OrgAppRoutes() {
                   <Route path="products"              element={<ProductList />} />
                   <Route path="products/new"          element={<AddProduct />} />
                   <Route path="products/:productId"   element={<ProductDetail />} />
+                  <Route path="product-images"        element={<ProductImagesPage />} />
                   <Route path="*"                     element={<Navigate to="" replace />} />
                 </Routes>
               </OrgLayout>

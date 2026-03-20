@@ -3,7 +3,7 @@ import { NavLink, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTenant } from '../../contexts/TenantContext'
 import {
-  LayoutDashboard, Package, QrCode, LogOut, Menu,
+  LayoutDashboard, Package, QrCode, LogOut, Menu, Images,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -16,8 +16,9 @@ export default function OrgLayout({ children }) {
 
   const base = `/app/${slug}`
   const navItems = [
-    { to: base,              label: 'Dashboard', icon: LayoutDashboard, end: true },
-    { to: `${base}/products`, label: 'Products',  icon: Package },
+    { to: base,                       label: 'Dashboard',     icon: LayoutDashboard, end: true },
+    { to: `${base}/products`,         label: 'Product QR',    icon: Package },
+    { to: `${base}/product-images`,   label: 'Product Images',icon: Images },
   ]
 
   async function handleSignOut() {
@@ -52,14 +53,14 @@ export default function OrgLayout({ children }) {
           )}
           <div className="min-w-0">
             <p className="font-bold text-slate-900 leading-none truncate">
-              {org?.businessName || 'QRDocs'}
+              {org?.businessName || 'CadifysAI'}
             </p>
             <p className="text-xs text-slate-400 mt-0.5">Admin Panel</p>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
           {navItems.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}

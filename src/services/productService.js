@@ -89,6 +89,11 @@ export async function uploadProductImage(orgId, productId, file, onProgress) {
   return data
 }
 
+export async function updateProductImage(orgId, productId, imageId, { title, notes, dueDate }) {
+  const { data } = await api.patch(`/api/orgs/${orgId}/products/${productId}/images/${imageId}`, { title, notes, dueDate })
+  return data
+}
+
 export async function deleteProductImage(orgId, productId, imageId) {
   await api.delete(`/api/orgs/${orgId}/products/${productId}/images/${imageId}`)
 }

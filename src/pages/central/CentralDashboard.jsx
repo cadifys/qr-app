@@ -5,7 +5,7 @@ import StatsCard from '../../components/StatsCard'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import {
   Building2, Package, QrCode, Plus,
-  Search, ChevronRight, ToggleLeft, ToggleRight,
+  Search, ChevronRight, ToggleLeft, ToggleRight, LayoutGrid, List,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatDistanceToNow } from 'date-fns'
@@ -15,6 +15,7 @@ export default function CentralDashboard() {
   const [loading, setLoading]   = useState(true)
   const [search, setSearch]     = useState('')
   const [toggling, setToggling] = useState(null)
+  const [view, setView]         = useState('list')
 
   useEffect(() => { loadOrgs() }, [])
 
@@ -78,14 +79,30 @@ export default function CentralDashboard() {
       <div className="card overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-6 border-b border-slate-100">
           <h2 className="font-semibold text-slate-800">Organizations</h2>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search organizations…"
-              className="input pl-9 w-64 text-sm"
-            />
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
+              <button
+                onClick={() => setView('list')}
+                className={`p-1.5 rounded-md transition-colors ${view === 'list' ? 'bg-white shadow-sm text-slate-700' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setView('grid')}
+                className={`p-1.5 rounded-md transition-colors ${view === 'grid' ? 'bg-white shadow-sm text-slate-700' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search organizations…"
+                className="input pl-9 w-64 text-sm"
+              />
+            </div>
           </div>
         </div>
 
@@ -101,7 +118,7 @@ export default function CentralDashboard() {
               </Link>
             )}
           </div>
-        ) : (
+        ) : view === 'list' ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -125,9 +142,7 @@ export default function CentralDashboard() {
                             className="h-9 w-9 rounded-lg object-contain border border-slate-100 bg-slate-50 flex-shrink-0" />
                         ) : (
                           <div className="h-9 w-9 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0">
-                            <span className="text-brand-700 text-sm font-bold">
-                              {org.businessName?.[0]?.toUpperCase()}
-                            </span>
+                            <span className="text-brand-700 text-sm font-bold">{org.businessName?.[0]?.toUpperCase()}</span>
                           </div>
                         )}
                         <div>
@@ -137,46 +152,26 @@ export default function CentralDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4 hidden md:table-cell">
-                      <code className="text-xs bg-slate-100 px-2 py-1 rounded font-mono">
-                        {org.slug}
-                      </code>
+                      <code className="text-xs bg-slate-100 px-2 py-1 rounded font-mono">{org.slug}</code>
                     </td>
-                    <td className="px-6 py-4 hidden lg:table-cell text-slate-600">
-                      {org.totalProducts || 0}
-                    </td>
-                    <td className="px-6 py-4 hidden lg:table-cell text-slate-600">
-                      {org.totalScans || 0}
-                    </td>
+                    <td className="px-6 py-4 hidden lg:table-cell text-slate-600">{org.totalProducts || 0}</td>
+                    <td className="px-6 py-4 hidden lg:table-cell text-slate-600">{org.totalScans || 0}</td>
                     <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleToggle(org)}
-                        disabled={toggling === org.id}
+                      <button onClick={() => handleToggle(org)} disabled={toggling === org.id}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors
-                          ${org.active
-                            ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                            : 'bg-red-50 text-red-700 hover:bg-red-100'
-                          } disabled:opacity-50`}
-                      >
+                          ${org.active ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-red-50 text-red-700 hover:bg-red-100'} disabled:opacity-50`}>
                         {toggling === org.id ? (
                           <span className="h-3 w-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        ) : org.active ? (
-                          <ToggleRight className="h-3.5 w-3.5" />
-                        ) : (
-                          <ToggleLeft className="h-3.5 w-3.5" />
-                        )}
+                        ) : org.active ? <ToggleRight className="h-3.5 w-3.5" /> : <ToggleLeft className="h-3.5 w-3.5" />}
                         {org.active ? 'Active' : 'Inactive'}
                       </button>
                     </td>
                     <td className="px-6 py-4 hidden sm:table-cell text-xs text-slate-400">
-                      {org.createdAt
-                        ? formatDistanceToNow(new Date(org.createdAt), { addSuffix: true })
-                        : '—'}
+                      {org.createdAt ? formatDistanceToNow(new Date(org.createdAt), { addSuffix: true }) : '—'}
                     </td>
                     <td className="px-6 py-4">
-                      <Link
-                        to={`/admin/orgs/${org.id}`}
-                        className="text-brand-600 hover:text-brand-800 inline-flex items-center gap-1 text-xs font-medium"
-                      >
+                      <Link to={`/admin/orgs/${org.id}`}
+                        className="text-brand-600 hover:text-brand-800 inline-flex items-center gap-1 text-xs font-medium">
                         View <ChevronRight className="h-3.5 w-3.5" />
                       </Link>
                     </td>
@@ -184,6 +179,46 @@ export default function CentralDashboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+        ) : (
+          <div className="p-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map(org => (
+              <div key={org.id} className="card p-5 flex flex-col gap-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {org.logoUrl ? (
+                      <img src={org.logoUrl} alt={org.businessName}
+                        className="h-10 w-10 rounded-xl object-contain border border-slate-100 bg-slate-50 flex-shrink-0" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0">
+                        <span className="text-brand-700 font-bold">{org.businessName?.[0]?.toUpperCase()}</span>
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-900 truncate">{org.businessName}</p>
+                      <p className="text-xs text-slate-400 truncate">{org.contactEmail}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => handleToggle(org)} disabled={toggling === org.id}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium flex-shrink-0 transition-colors
+                      ${org.active ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-red-50 text-red-700 hover:bg-red-100'} disabled:opacity-50`}>
+                    {toggling === org.id ? (
+                      <span className="h-3 w-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ) : org.active ? <ToggleRight className="h-3 w-3" /> : <ToggleLeft className="h-3 w-3" />}
+                    {org.active ? 'Active' : 'Inactive'}
+                  </button>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-slate-500 border-t border-slate-50 pt-3">
+                  <span><code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono">{org.slug}</code></span>
+                  <span className="flex items-center gap-1"><Package className="h-3 w-3" /> {org.totalProducts || 0}</span>
+                  <span className="flex items-center gap-1"><QrCode className="h-3 w-3" /> {org.totalScans || 0}</span>
+                </div>
+                <Link to={`/admin/orgs/${org.id}`}
+                  className="text-brand-600 hover:text-brand-800 inline-flex items-center gap-1 text-xs font-medium self-start">
+                  View details <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            ))}
           </div>
         )}
       </div>

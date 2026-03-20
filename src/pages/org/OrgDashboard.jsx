@@ -7,16 +7,15 @@ import StatsCard from '../../components/StatsCard'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import {
   Package, QrCode, FileText, TrendingUp, Plus, ArrowRight,
-  Upload, Clock,
+  Upload, LayoutGrid, List,
 } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-
 export default function OrgDashboard() {
   const { slug }    = useParams()
   const { orgId }   = useAuth()
   const { org }     = useTenant()
   const [products, setProducts]   = useState([])
   const [loading, setLoading]     = useState(true)
+  const [view, setView]           = useState('list')
 
   useEffect(() => {
     if (orgId) loadProducts()
@@ -63,9 +62,25 @@ export default function OrgDashboard() {
       <div className="card overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <h2 className="font-semibold text-slate-800">Recent Products</h2>
-          <Link to={`/app/${slug}/products`} className="text-sm text-brand-600 hover:text-brand-800 flex items-center gap-1">
-            View all <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
+              <button
+                onClick={() => setView('grid')}
+                className={`p-1.5 rounded-md transition-colors ${view === 'grid' ? 'bg-white shadow-sm text-slate-700' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setView('list')}
+                className={`p-1.5 rounded-md transition-colors ${view === 'list' ? 'bg-white shadow-sm text-slate-700' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                <List className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <Link to={`/app/${slug}/products`} className="text-sm text-brand-600 hover:text-brand-800 flex items-center gap-1">
+              View all <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
 
         {loading ? (
@@ -78,7 +93,7 @@ export default function OrgDashboard() {
               <Plus className="h-4 w-4" /> Add Product
             </Link>
           </div>
-        ) : (
+        ) : view === 'list' ? (
           <div className="divide-y divide-slate-50">
             {recentProducts.map(product => (
               <Link
@@ -106,6 +121,32 @@ export default function OrgDashboard() {
                   )}
                   <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-brand-500 transition-colors" />
                 </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="p-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {recentProducts.map(product => (
+              <Link
+                key={product.id}
+                to={`/app/${slug}/products/${product.id}`}
+                className="card p-4 hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer"
+              >
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0
+                    ${product.currentPdfUrl ? 'bg-brand-50 text-brand-600' : 'bg-slate-100 text-slate-400'}`}>
+                    <Package className="h-4 w-4" />
+                  </div>
+                  <ArrowRight className="h-3.5 w-3.5 text-slate-300 group-hover:text-brand-500 transition-colors mt-1" />
+                </div>
+                <p className="font-semibold text-slate-900 text-sm truncate group-hover:text-brand-700 transition-colors">
+                  {product.name}
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  {product.currentPdfUrl
+                    ? `PDF v${product.pdfVersionCount || 1} · ${product.scanCount || 0} scans`
+                    : 'No PDF uploaded yet'}
+                </p>
               </Link>
             ))}
           </div>
